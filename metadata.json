@@ -4,6 +4,6 @@
   "uuid": "sysmonitor@talhasiddique7", 
   "settings-schema": "org.gnome.shell.extensions.sysmon",
   "shell-version": ["45", "46", "47", "48", "49", "50"],
-  "version": 1, 
+  "version": 3, 
   "url": "" 
 } 

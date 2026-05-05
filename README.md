@@ -5,6 +5,7 @@ A lightweight, professional GNOME Shell extension that displays real-time system
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![GNOME](https://img.shields.io/badge/GNOME-45%2B-4a90d9.svg)
 
+
 ## Features
 
 - **CPU Usage** - Real-time CPU utilization percentage
@@ -30,7 +31,18 @@ The extension adds compact, icon-based metrics to your GNOME panel:
 
 ## Installation
 
-### Quick Install
+### Install from GNOME Extensions (Recommended)
+
+The easiest way to install is directly from the GNOME Extensions website:
+
+**[Download from extensions.gnome.org](https://extensions.gnome.org/extension/9838/system-monitor/)**
+
+After installing, enable the extension via the Extensions app or run:
+```bash
+gnome-extensions enable sysmonitor@talhasiddique7
+```
+
+### Quick Install (Manual)
 
 ```bash
 git clone https://github.com/talhasiddique7/sys-monitor.git
@@ -83,9 +95,15 @@ All monitoring is done locally without external dependencies (except for NVIDIA 
 
 ## Screenshots
 
-*Panel indicators showing CPU, RAM, Swap, and Network speeds with color-coded values.*
+### Panel View
+Compact indicators in the GNOME top panel showing real-time system metrics:
 
-*Click the panel icon for a detailed popup with progress bars for all metrics.*
+![Panel View](screenshots/panel.png)
+
+### Detailed Popup
+Click any panel indicator to open the detailed popup with progress bars:
+
+![Popup View](screenshots/popup.png)
 
 ## Contributing
 

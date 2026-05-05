@@ -221,7 +221,7 @@ function makeBar(pct, color = '#4fc3f7') {
          this.add_child(this._panelBox); 
  
          this._buildPopup();
-        this.menu.setWidth(280);
+        this.menu.actor.set_width(280);
     }
 
     _buildPopup() { 
