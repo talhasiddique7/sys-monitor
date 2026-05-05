@@ -211,15 +211,18 @@ function makeBar(pct, color = '#4fc3f7') {
          this._panelBox.add_child(this._swapSep); 
          this._panelBox.add_child(this._swapGroup.box); 
          this._panelBox.add_child(this._netSep); 
-         this._panelBox.add_child(this._upGroup.box); 
+         this._panelBox.add_child(this._upGroup.box);
+         this._upDownSep = sep();
+         this._panelBox.add_child(this._upDownSep);
          this._panelBox.add_child(this._downGroup.box); 
  
          this.add_child(this._panelBox); 
  
-         this._buildPopup(); 
-     } 
- 
-     _buildPopup() { 
+         this._buildPopup();
+        this.menu.setWidth(280);
+    }
+
+    _buildPopup() { 
          // Title 
          const titleItem = new PopupMenu.PopupBaseMenuItem({ reactive: false }); 
          titleItem.add_child(new St.Label({ text: 'SYSTEM MONITOR', style_class: 'sysmon-popup-title' })); 
@@ -333,10 +336,11 @@ function makeBar(pct, color = '#4fc3f7') {
             this._upGroup.value.set_text(_formatSpeed(net.upKB)); 
             this._downGroup.value.set_text(_formatSpeed(net.downKB)); 
          } 
-         this._swapSep.visible = true;
-         this._swapGroup.box.visible = true;
+         this._swapSep.visible = showSwap;
+         this._swapGroup.box.visible = showSwap;
          this._netSep.visible = showNetwork;
          this._upGroup.box.visible = showNetwork;
+         this._upDownSep.visible = showNetwork;
          this._downGroup.box.visible = showNetwork;
  
          // Refresh popup bars 
