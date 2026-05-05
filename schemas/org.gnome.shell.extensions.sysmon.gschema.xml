@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<schemalist> 
+  <schema id="org.gnome.shell.extensions.sysmon" 
+          path="/org/gnome/shell/extensions/sysmon/"> 
+    <key name="refresh-interval" type="i"> 
+      <default>2</default> 
+      <summary>Refresh interval in seconds</summary> 
+    </key> 
+    <key name="show-gpu" type="b"> 
+      <default>true</default> 
+    </key> 
+    <key name="show-swap" type="b"> 
+      <default>true</default> 
+    </key> 
+    <key name="show-network" type="b"> 
+      <default>true</default> 
+    </key> 
+  </schema> 
+</schemalist> 
