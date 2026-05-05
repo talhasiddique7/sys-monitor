@@ -1,28 +1,48 @@
-.sysmon-panel-box { 
-    spacing: 8px; 
-    padding: 2px 12px;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 99px;
-    margin: 4px 0;
-} 
- 
-.sysmon-panel-label { 
-    font-size: 11px; 
-    font-family: 'JetBrains Mono', 'Ubuntu Mono', monospace; 
-    color: rgba(255,255,255,0.9); 
-    font-weight: bold;
+.sysmon-panel-box {
+    spacing: 6px;
+    padding: 0 6px;
+    min-height: 16px;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.sysmon-panel-metric {
+    spacing: 4px;
+    padding: 0;
+    min-height: 14px;
+}
+
+.sysmon-panel-icon {
+    icon-size: 11px;
+    min-width: 11px;
+}
+
+.sysmon-panel-label {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', 'Ubuntu Mono', monospace;
+    color: rgba(216,226,244,0.72);
+    font-weight: 800;
+}
+
+.sysmon-panel-value {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', 'Ubuntu Mono', monospace;
+    color: rgba(255,255,255,0.96);
+    font-weight: 800;
 }
 
 .sysmon-panel-sep {
-    color: rgba(255,255,255,0.2);
-    font-size: 11px;
+    color: rgba(183,196,221,0.28);
+    font-size: 10px;
+    font-weight: 800;
+    padding: 0 2px;
 }
 
 .sysmon-popup-title {
     font-size: 10px;
     font-weight: 800;
-    color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.46);
     letter-spacing: 1.2px;
     padding: 8px 12px;
 }
@@ -35,12 +55,12 @@
 .sysmon-card-title { 
     font-size: 12px; 
     font-weight: 600; 
-    color: rgba(255,255,255,0.6); 
+    color: rgba(255,255,255,0.68); 
 } 
 
 .sysmon-gpu-badge {
-    background-color: rgba(206, 147, 216, 0.2);
-    color: #ce93d8;
+    background-color: rgba(206, 147, 216, 0.16);
+    color: #e0a8eb;
     font-size: 8px;
     font-weight: bold;
     padding: 0px 4px;
@@ -62,16 +82,17 @@
 } 
 
 .sysmon-net-card {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.06);
     border-radius: 8px;
     padding: 8px 12px;
     spacing: 4px;
+    border: 1px solid rgba(255,255,255,0.06);
 }
 
 .sysmon-net-card-title {
     font-size: 9px;
     font-weight: 800;
-    color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.48);
     letter-spacing: 0.5px;
 }
 
@@ -88,9 +109,12 @@
 }
 
 /* Colors from reference */
-.color-cpu { color: #4fc3f7; }
-.color-ram { color: #81c784; }
+.color-normal { color: #8bd889; }
+.color-warning { color: #f4b24d; }
+.color-critical { color: #ff6b6b; }
+.color-cpu { color: #55c8f4; }
+.color-ram { color: #8bd889; }
 .color-gpu { color: #ce93d8; }
 .color-swap { color: #ffb74d; }
-.color-up { color: #ffb74d; }
-.color-down { color: #4db6ac; }
+.color-up { color: #f4b24d; }
+.color-down { color: #67c2ba; }
