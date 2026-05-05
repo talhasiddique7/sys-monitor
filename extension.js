@@ -1,4 +1,4 @@
-import GLib from 'gi://GLib'; 
+import GLib from 'gi://GLib';
 import Gio from 'gi://Gio'; 
 import St from 'gi://St'; 
 import Clutter from 'gi://Clutter'; 
@@ -8,97 +8,99 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'; 
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js'; 
  
-// ── Helpers: read /proc files ────────────────────────────────────────────── 
- 
-function readFile(path) { 
-    try { 
-        const [ok, data] = GLib.file_get_contents(path); 
-        return ok ? new TextDecoder().decode(data) : null; 
-    } catch { return null; } 
+// ── Helpers: read /proc files (async) ─────────────────────────────────────
+
+async function readFileAsync(path) {
+    const file = Gio.File.new_for_path(path);
+    try {
+        const [ok, data] = await file.load_contents_async(null);
+        return ok ? new TextDecoder().decode(data) : null;
+    } catch { return null; }
 } 
  
-// CPU: returns { user, nice, system, idle, total } 
-let _prevCpu = null; 
-function getCpuPercent() { 
-    const raw = readFile('/proc/stat'); 
-    if (!raw) return 0; 
-    const line = raw.split('\n')[0]; // "cpu  N N N N N N N N N N" 
-    const vals = line.trim().split(/\s+/).slice(1).map(Number); 
-    const idle = vals[3] + vals[4]; // idle + iowait 
-    const total = vals.reduce((a, b) => a + b, 0); 
-    if (_prevCpu === null) { _prevCpu = { idle, total }; return 0; } 
-    const dIdle = idle - _prevCpu.idle; 
-    const dTotal = total - _prevCpu.total; 
-    _prevCpu = { idle, total }; 
-    return dTotal === 0 ? 0 : Math.round((1 - dIdle / dTotal) * 100); 
+// CPU: returns { user, nice, system, idle, total }
+let _prevCpu = null;
+async function getCpuPercent() {
+    const raw = await readFileAsync('/proc/stat');
+    if (!raw) return 0;
+    const line = raw.split('\n')[0]; // "cpu  N N N N N N N N N N"
+    const vals = line.trim().split(/\s+/).slice(1).map(Number);
+    const idle = vals[3] + vals[4]; // idle + iowait
+    const total = vals.reduce((a, b) => a + b, 0);
+    if (_prevCpu === null) { _prevCpu = { idle, total }; return 0; }
+    const dIdle = idle - _prevCpu.idle;
+    const dTotal = total - _prevCpu.total;
+    _prevCpu = { idle, total };
+    return dTotal === 0 ? 0 : Math.round((1 - dIdle / dTotal) * 100);
 } 
  
-function getMemInfo() { 
-    const raw = readFile('/proc/meminfo'); 
-    if (!raw) return { ramPct: 0, swapPct: 0, ramUsedMB: 0, ramTotalMB: 0 }; 
-    const get = key => { 
-        const m = raw.match(new RegExp(key + ':\\s+(\\d+)')); 
-        return m ? parseInt(m[1]) : 0; 
-    }; 
-    const total = get('MemTotal'), free = get('MemFree'), 
-          buffers = get('Buffers'), cached = get('Cached'), 
-          swapTotal = get('SwapTotal'), swapFree = get('SwapFree'); 
-    const used = total - free - buffers - cached; 
-    return { 
-        ramPct:    total ? Math.round(used / total * 100) : 0, 
-        swapPct:   swapTotal ? Math.round((swapTotal - swapFree) / swapTotal * 100) : 0, 
-        ramUsedMB: Math.round(used / 1024), 
-        ramTotalMB:Math.round(total / 1024), 
-    }; 
+async function getMemInfo() {
+    const raw = await readFileAsync('/proc/meminfo');
+    if (!raw) return { ramPct: 0, swapPct: 0, ramUsedMB: 0, ramTotalMB: 0 };
+    const get = key => {
+        const m = raw.match(new RegExp(key + ':\\s+(\\d+)'));
+        return m ? parseInt(m[1]) : 0;
+    };
+    const total = get('MemTotal'), free = get('MemFree'),
+          buffers = get('Buffers'), cached = get('Cached'),
+          swapTotal = get('SwapTotal'), swapFree = get('SwapFree');
+    const used = total - free - buffers - cached;
+    return {
+        ramPct:    total ? Math.round(used / total * 100) : 0,
+        swapPct:   swapTotal ? Math.round((swapTotal - swapFree) / swapTotal * 100) : 0,
+        ramUsedMB: Math.round(used / 1024),
+        ramTotalMB:Math.round(total / 1024),
+    };
 } 
  
-let _prevNet = null; 
-function getNetSpeed(iface = null) { 
-    const raw = readFile('/proc/net/dev'); 
-    if (!raw) return { upKB: 0, downKB: 0 }; 
-    let rxBytes = 0, txBytes = 0; 
-    raw.split('\n').slice(2).forEach(line => { 
-        const parts = line.trim().split(/\s+/); 
-        if (parts.length < 10) return; 
-        const name = parts[0].replace(':', ''); 
-        if (name === 'lo') return;                  // skip loopback 
-        if (iface && name !== iface) return; 
-        rxBytes += parseInt(parts[1]); 
-        txBytes += parseInt(parts[9]); 
-    }); 
-    const now = Date.now(); 
-    if (_prevNet === null) { _prevNet = { rxBytes, txBytes, ts: now }; return { upKB: 0, downKB: 0 }; } 
-    const dt = (now - _prevNet.ts) / 1000; 
-    const upKB   = dt > 0 ? Math.round((txBytes - _prevNet.txBytes) / dt / 1024) : 0; 
-    const downKB  = dt > 0 ? Math.round((rxBytes - _prevNet.rxBytes) / dt / 1024) : 0; 
-    _prevNet = { rxBytes, txBytes, ts: now }; 
-    return { upKB: Math.max(0, upKB), downKB: Math.max(0, downKB) }; 
+let _prevNet = null;
+async function getNetSpeed(iface = null) {
+    const raw = await readFileAsync('/proc/net/dev');
+    if (!raw) return { upKB: 0, downKB: 0 };
+    let rxBytes = 0, txBytes = 0;
+    raw.split('\n').slice(2).forEach(line => {
+        const parts = line.trim().split(/\s+/);
+        if (parts.length < 10) return;
+        const name = parts[0].replace(':', '');
+        if (name === 'lo') return;                  // skip loopback
+        if (iface && name !== iface) return;
+        rxBytes += parseInt(parts[1]);
+        txBytes += parseInt(parts[9]);
+    });
+    const now = Date.now();
+    if (_prevNet === null) { _prevNet = { rxBytes, txBytes, ts: now }; return { upKB: 0, downKB: 0 }; }
+    const dt = (now - _prevNet.ts) / 1000;
+    const upKB   = dt > 0 ? Math.round((txBytes - _prevNet.txBytes) / dt / 1024) : 0;
+    const downKB  = dt > 0 ? Math.round((rxBytes - _prevNet.rxBytes) / dt / 1024) : 0;
+    _prevNet = { rxBytes, txBytes, ts: now };
+    return { upKB: Math.max(0, upKB), downKB: Math.max(0, downKB) };
 } 
  
 // GPU: tries nvidia-smi, then AMD sysfs 
 let _gpuType = null; // 'nvidia' | 'amd' | 'none' 
-function detectGpu() { 
+async function detectGpu() { 
     if (GLib.find_program_in_path('nvidia-smi')) { _gpuType = 'nvidia'; return; } 
-    const amdPath = '/sys/class/drm/card0/device/gpu_busy_percent'; 
-    if (GLib.file_test(amdPath, GLib.FileTest.EXISTS)) { _gpuType = 'amd'; return; } 
+    const amdFile = Gio.File.new_for_path('/sys/class/drm/card0/device/gpu_busy_percent'); 
+    const exists = await amdFile.query_exists_async(null); 
+    if (exists) { _gpuType = 'amd'; return; } 
     _gpuType = 'none'; 
 } 
-function getGpuPercent(callback) { 
+async function getGpuPercent() { 
     if (_gpuType === 'amd') { 
-        const v = readFile('/sys/class/drm/card0/device/gpu_busy_percent'); 
-        callback(v ? parseInt(v.trim()) : 0); 
-        return; 
+        const v = await readFileAsync('/sys/class/drm/card0/device/gpu_busy_percent'); 
+        return v ? parseInt(v.trim()) : 0; 
     } 
     if (_gpuType === 'nvidia') { 
         try { 
-            const [, stdout] = GLib.spawn_command_line_sync( 
-                'nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits' 
-            ); 
-            callback(parseInt(new TextDecoder().decode(stdout).trim()) || 0); 
-        } catch { callback(0); } 
-        return; 
+            const proc = Gio.Subprocess.new(
+                ['nvidia-smi', '--query-gpu=utilization.gpu', '--format=csv,noheader,nounits'],
+                Gio.SubprocessFlags.STDOUT_PIPE
+            );
+            const [stdout] = await proc.communicate_utf8_async(null, null);
+            return parseInt(stdout.trim()) || 0; 
+        } catch { return 0; } 
     } 
-    callback(0); 
+    return 0; 
 } 
  
 // ── Mini bar widget ──────────────────────────────────────────────────────── 
@@ -398,14 +400,14 @@ function _formatSpeed(kb) {
  // ── Main Extension ───────────────────────────────────────────────────────── 
  
  export default class SysMonExtension extends Extension { 
-     enable() { 
-         this._indicator = new Indicator(this); 
-         Main.panel.addToStatusArea(this.uuid, this._indicator); 
- 
-         detectGpu(); 
-         this._gpuPct = 0; 
-         this._startTimer(); 
-     } 
+     async enable() {
+        this._indicator = new Indicator(this);
+        Main.panel.addToStatusArea(this.uuid, this._indicator);
+
+        await detectGpu();
+        this._gpuPct = 0;
+        this._startTimer();
+    } 
  
      _startTimer() { 
          const interval = this.getSettings().get_int('refresh-interval'); 
@@ -415,24 +417,24 @@ function _formatSpeed(kb) {
          }); 
      } 
  
-     _tick() { 
-         const cpu = getCpuPercent(); 
-         const mem = getMemInfo(); 
-         const net = getNetSpeed(); 
- 
-         if (_gpuType !== 'none') { 
-             getGpuPercent(pct => { 
-                 this._gpuPct = pct; 
-             }); 
-         } 
- 
-         this._indicator.update({ 
-             cpu, 
-             gpu: _gpuType !== 'none' ? this._gpuPct : null, 
-             mem, 
-             net, 
-         }); 
-     } 
+     async _tick() {
+        const [cpu, mem, net] = await Promise.all([
+            getCpuPercent(),
+            getMemInfo(),
+            getNetSpeed()
+        ]);
+
+        if (_gpuType !== 'none') {
+            this._gpuPct = await getGpuPercent();
+        }
+
+        this._indicator.update({
+            cpu,
+            gpu: _gpuType !== 'none' ? this._gpuPct : null,
+            mem,
+            net,
+        });
+    } 
  
      disable() { 
          if (this._timerId) { 
