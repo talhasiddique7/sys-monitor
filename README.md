@@ -79,7 +79,9 @@ Open **Extensions → System Monitor → Settings** to customize:
 
 ## Requirements
 
-- **GNOME Shell**: 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, or 50
+- **GNOME Shell**:
+  - Main package (`extension.js`/`prefs.js`): 45, 46, 47, 48, 49, 50
+  - Legacy package (`extensionLegacy.js`/`prefsLegacy.js`): 40, 41, 42, 43, 44
 - **GPU Support** (optional):
   - NVIDIA: `nvidia-smi` must be in PATH
   - AMD: `sysfs` interface at `/sys/class/drm/card0/device/gpu_busy_percent`
@@ -90,6 +92,12 @@ Run all automated checks with one command:
 
 ```bash
 make check
+```
+
+Build separate upload artifacts for GNOME 40-44 and GNOME 45-50:
+
+```bash
+make pack-dual
 ```
 
 This runs:
