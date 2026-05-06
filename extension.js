@@ -8,13 +8,16 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'; 
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js'; 
  
+Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
+Gio._promisify(Gio.Subprocess.prototype, 'communicate_utf8_async', 'communicate_utf8_finish');
+
 // ── Helpers: read /proc files (async) ─────────────────────────────────────
 
 async function readFileAsync(path) {
     const file = Gio.File.new_for_path(path);
     try {
-        const [ok, data] = await file.load_contents_async(null);
-        return ok ? new TextDecoder().decode(data) : null;
+        const [data] = await file.load_contents_async(null);
+        return new TextDecoder().decode(data);
     } catch { return null; }
 } 
  
@@ -80,9 +83,8 @@ async function getNetSpeed(iface = null) {
 let _gpuType = null; // 'nvidia' | 'amd' | 'none' 
 async function detectGpu() { 
     if (GLib.find_program_in_path('nvidia-smi')) { _gpuType = 'nvidia'; return; } 
-    const amdFile = Gio.File.new_for_path('/sys/class/drm/card0/device/gpu_busy_percent'); 
-    const exists = await amdFile.query_exists_async(null); 
-    if (exists) { _gpuType = 'amd'; return; } 
+    const amdFile = Gio.File.new_for_path('/sys/class/drm/card0/device/gpu_busy_percent');
+    if (amdFile.query_exists(null)) { _gpuType = 'amd'; return; } 
     _gpuType = 'none'; 
 } 
 async function getGpuPercent() { 
@@ -407,33 +409,31 @@ function _formatSpeed(kb) {
         await detectGpu();
         this._gpuPct = 0;
         this._startTimer();
+        this._tick();
     } 
  
-     _startTimer() { 
-         const interval = this.getSettings().get_int('refresh-interval'); 
-         this._timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, interval, () => { 
-             this._tick(); 
-             return GLib.SOURCE_CONTINUE; 
-         }); 
-     } 
- 
-     async _tick() {
-        const [cpu, mem, net] = await Promise.all([
-            getCpuPercent(),
-            getMemInfo(),
-            getNetSpeed()
-        ]);
+     _startTimer() {
+         const interval = this.getSettings().get_int('refresh-interval');
+         this._timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, interval, () => {
+             this._tick();
+             return GLib.SOURCE_CONTINUE;
+         });
+     }
 
-        if (_gpuType !== 'none') {
-            this._gpuPct = await getGpuPercent();
-        }
-
-        this._indicator.update({
-            cpu,
-            gpu: _gpuType !== 'none' ? this._gpuPct : null,
-            mem,
-            net,
-        });
+     _tick() {
+         Promise.all([
+             getCpuPercent(),
+             getMemInfo(),
+             getNetSpeed()
+         ]).then(([cpu, mem, net]) => {
+             if (_gpuType !== 'none') {
+                 return getGpuPercent().then(gpu => {
+                     this._gpuPct = gpu;
+                     this._indicator.update({ cpu, gpu: _gpuType !== 'none' ? this._gpuPct : null, mem, net });
+                 });
+             }
+             this._indicator.update({ cpu, gpu: _gpuType !== 'none' ? this._gpuPct : null, mem, net });
+         }).catch(error => logError(error, 'SysMon update failed'));
     } 
  
      disable() { 
