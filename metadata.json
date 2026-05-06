@@ -4,6 +4,11 @@
   "uuid": "sysmonitor@talhasiddique7",
   "settings-schema": "org.gnome.shell.extensions.sysmon",
   "shell-version": [
+    "40",
+    "41",
+    "42",
+    "43",
+    "44",
     "45",
     "46",
     "47",
@@ -12,5 +17,5 @@
     "50"
   ],
   "version": 4,
-  "url": ""
+  "url": "https://extensions.gnome.org/extension/9838/system-monitor/"
 }

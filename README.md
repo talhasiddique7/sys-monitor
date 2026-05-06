@@ -3,7 +3,7 @@
 A lightweight, professional GNOME Shell extension that displays real-time system resource usage directly in your top panel.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![GNOME](https://img.shields.io/badge/GNOME-45%2B-4a90d9.svg)
+![GNOME](https://img.shields.io/badge/GNOME-40%2B-4a90d9.svg)
 
 
 ## Features
@@ -79,10 +79,26 @@ Open **Extensions → System Monitor → Settings** to customize:
 
 ## Requirements
 
-- **GNOME Shell**: 45, 46, 47, 48, 49, or 50
+- **GNOME Shell**: 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, or 50
 - **GPU Support** (optional):
   - NVIDIA: `nvidia-smi` must be in PATH
   - AMD: `sysfs` interface at `/sys/class/drm/card0/device/gpu_busy_percent`
+
+## Validation
+
+Run all automated checks with one command:
+
+```bash
+make check
+```
+
+This runs:
+- JavaScript syntax checks for `extension.js`, `extensionLegacy.js`, `prefs.js`, and `prefsLegacy.js`
+- GSettings schema validation
+- `metadata.json` validation
+- `install.sh` shell syntax validation
+- Extension pack + zip integrity verification
+- Unit tests automatically, when a test runner is configured in the project
 
 ## Technical Details
 
