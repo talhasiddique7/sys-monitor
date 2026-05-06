@@ -82,6 +82,15 @@ class Preferences {
     }
 }
 
+let prefs = null;
+
 function init() {
-    return new Preferences();
+    prefs = new Preferences();
+}
+
+function buildPrefsWidget() {
+    if (!prefs)
+        prefs = new Preferences();
+
+    return prefs.buildPrefsWidget();
 }
