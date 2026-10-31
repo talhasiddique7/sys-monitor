@@ -1,0 +1,2 @@
+/* GNOME Shell 46+ only reloads variant stylesheets on theme switch, so dark needs its own file */
+@import url("stylesheet.css");

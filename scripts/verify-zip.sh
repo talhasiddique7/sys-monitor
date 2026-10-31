@@ -26,7 +26,7 @@ need_cmd glib-compile-schemas
 echo "==> Verify zip [$VARIANT]: $(basename "$ZIP")"
 unzip -q "$ZIP" -d "$TMP_DIR"
 
-for file in metadata.json extension.js prefs.js stylesheet.css; do
+for file in metadata.json extension.js prefs.js stylesheet.css stylesheet-light.css stylesheet-dark.css; do
     [[ -f "$TMP_DIR/$file" ]] || { echo "ERROR: missing $file in $VARIANT zip" >&2; exit 1; }
 done
 

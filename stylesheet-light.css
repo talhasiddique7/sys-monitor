@@ -1,0 +1,35 @@
+/* Loaded by GNOME Shell 46+ instead of stylesheet.css when the light style is active */
+@import url("stylesheet.css");
+
+.sysmon-panel-label,
+.sysmon-panel-value,
+.sysmon-popup-title,
+.sysmon-metric-title,
+.color-monochrome,
+.tone-mono {
+    color: inherit;
+}
+
+.sysmon-panel-sep {
+    color: rgba(128,128,128,0.55);
+}
+
+.sysmon-header-icon,
+.sysmon-metric-detail,
+.sysmon-net-label {
+    color: rgba(128,128,128,0.9);
+}
+
+.sysmon-net-unit {
+    color: rgba(128,128,128,0.85);
+}
+
+.sysmon-header-btn:hover {
+    background-color: rgba(128,128,128,0.18);
+}
+
+.sysmon-metric-card,
+.sysmon-net-card {
+    background-color: rgba(128,128,128,0.12);
+    border: 1px solid rgba(128,128,128,0.18);
+}

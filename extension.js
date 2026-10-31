@@ -260,6 +260,12 @@ const THRESHOLD_STATES = [
     {max: 100, className: 'color-critical', color: '#ff6b6b'},
 ];
 const MONOCHROME_STATE = {className: 'color-monochrome', color: '#deddda'};
+const MONOCHROME_LIGHT_COLOR = '#3d3846';
+
+// Main.getStyleVariant() is GNOME 46+; 45 has no light shell style
+function getMonochromeColor() {
+    return Main.getStyleVariant?.() === 'light' ? MONOCHROME_LIGHT_COLOR : MONOCHROME_STATE.color;
+}
 
 function getThresholdState(pct) {
     const currentPct = Math.max(0, Math.min(100, pct ?? 0));
@@ -745,7 +751,7 @@ class Indicator extends PanelMenu.Button {
 
     _refreshMetricCard(card, pct) {
         const mono = this._settings.get_boolean('monochrome-mode');
-        const color = mono ? MONOCHROME_STATE.color : card.accentColor;
+        const color = mono ? getMonochromeColor() : card.accentColor;
         const toneClass = mono ? 'tone-mono' : `tone-${card.tone}`;
 
         card.pctLbl.set_text(`${pct}%`);
@@ -756,7 +762,7 @@ class Indicator extends PanelMenu.Button {
 
     _refreshNetCard(card, kb) {
         const mono = this._settings.get_boolean('monochrome-mode');
-        card.wave._color = mono ? MONOCHROME_STATE.color : card.accentColor;
+        card.wave._color = mono ? getMonochromeColor() : card.accentColor;
         pushChartHistory(card.wave, kb);
     }
 

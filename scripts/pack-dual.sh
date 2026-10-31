@@ -29,7 +29,7 @@ pack_variant() {
     local tmp_dir
     tmp_dir="$(mktemp -d)"
 
-    cp "${ROOT_DIR}/stylesheet.css" "${tmp_dir}/"
+    cp "${ROOT_DIR}/stylesheet.css" "${ROOT_DIR}/stylesheet-light.css" "${ROOT_DIR}/stylesheet-dark.css" "${tmp_dir}/"
     cp -R "${ROOT_DIR}/icons" "${tmp_dir}/"
     cp -R "${ROOT_DIR}/schemas" "${tmp_dir}/"
     cp "${ROOT_DIR}/${extension_src}" "${tmp_dir}/extension.js"
@@ -38,7 +38,7 @@ pack_variant() {
     jq --argjson versions "${shell_versions_json}" '."shell-version" = $versions' \
         "${ROOT_DIR}/metadata.json" > "${tmp_dir}/metadata.json"
 
-    gnome-extensions pack "${tmp_dir}" --force --out-dir "${tmp_dir}" --extra-source=icons >/dev/null
+    gnome-extensions pack "${tmp_dir}" --force --out-dir "${tmp_dir}" --extra-source=icons --extra-source=stylesheet-light.css --extra-source=stylesheet-dark.css >/dev/null
 
     local packed_zip="${tmp_dir}/${UUID}.shell-extension.zip"
     local output_zip="${OUT_DIR}/${UUID}-${variant}.shell-extension.zip"

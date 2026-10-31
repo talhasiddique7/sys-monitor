@@ -12,7 +12,7 @@ mkdir -p "$EXT_DIR/schemas" "$EXT_DIR/icons"
 cp extension.js "$EXT_DIR/"
 cp prefs.js "$EXT_DIR/"
 cp metadata.json "$EXT_DIR/"
-cp stylesheet.css "$EXT_DIR/"
+cp stylesheet.css stylesheet-light.css stylesheet-dark.css "$EXT_DIR/"
 cp icons/*.svg "$EXT_DIR/icons/"
 cp schemas/org.gnome.shell.extensions.sysmon.gschema.xml "$EXT_DIR/schemas/"
 
