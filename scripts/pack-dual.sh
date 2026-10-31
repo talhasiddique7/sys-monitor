@@ -19,6 +19,11 @@ need_cmd bash
 
 UUID="$(jq -r '.uuid' "${ROOT_DIR}/metadata.json")"
 mkdir -p "${OUT_DIR}"
+TMP_ROOT="$(mktemp -d)"
+cleanup() {
+    rm -rf "${TMP_ROOT}"
+}
+trap cleanup EXIT
 
 pack_variant() {
     local variant="$1"
@@ -26,8 +31,8 @@ pack_variant() {
     local extension_src="$3"
     local prefs_src="$4"
 
-    local tmp_dir
-    tmp_dir="$(mktemp -d)"
+    local tmp_dir="${TMP_ROOT}/${variant}"
+    mkdir -p "${tmp_dir}"
 
     cp "${ROOT_DIR}/stylesheet.css" "${ROOT_DIR}/stylesheet-light.css" "${ROOT_DIR}/stylesheet-dark.css" "${tmp_dir}/"
     cp -R "${ROOT_DIR}/icons" "${tmp_dir}/"
@@ -44,7 +49,6 @@ pack_variant() {
     local output_zip="${OUT_DIR}/${UUID}-${variant}.shell-extension.zip"
 
     mv "${packed_zip}" "${output_zip}"
-    rm -rf "${tmp_dir}"
 
     bash "$VERIFY" "$output_zip" "$variant" "${shell_versions_json}"
     echo "    Created ${output_zip}"

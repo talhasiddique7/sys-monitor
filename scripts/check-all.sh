@@ -56,7 +56,13 @@ run_step "Syntax check: prefsLegacy.js" node --check "${ROOT_DIR}/prefsLegacy.js
 
 run_step "Schema validation" glib-compile-schemas --strict --dry-run "${ROOT_DIR}/schemas"
 run_step "Metadata JSON validation" jq empty "${ROOT_DIR}/metadata.json"
-run_step "Installer syntax validation" bash -n "${ROOT_DIR}/install.sh"
+run_step "Installer and packaging syntax validation" bash -n \
+    "${ROOT_DIR}/install.sh" \
+    "${ROOT_DIR}/scripts/pack-dual.sh" \
+    "${ROOT_DIR}/scripts/install-variant.sh" \
+    "${ROOT_DIR}/scripts/pack-install.sh" \
+    "${ROOT_DIR}/scripts/reload.sh" \
+    "${ROOT_DIR}/scripts/verify-zip.sh"
 
 TMP_DIR="$(mktemp -d)"
 PACK_ARGS=(
@@ -79,6 +85,6 @@ run_step "Packed zip integrity" unzip -t "${PACK_FILE}"
 run_step "Verify packaged icons" unzip -l "${PACK_FILE}" icons/cpu-symbolic.svg icons/download-symbolic.svg icons/gpu-symbolic.svg icons/ram-symbolic.svg icons/swap-symbolic.svg icons/upload-symbolic.svg >/dev/null
 run_unit_tests_if_configured
 
-run_step "Dual variant production pack" "${ROOT_DIR}/scripts/pack-dual.sh" "${TMP_DIR}/dist"
+run_step "Dual-variant production pack" "${ROOT_DIR}/scripts/pack-dual.sh" "${TMP_DIR}/dist"
 
 echo "==> All checks completed."

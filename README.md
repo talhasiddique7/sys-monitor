@@ -3,7 +3,7 @@
 A lightweight, professional GNOME Shell extension that displays real-time system resource usage directly in your top panel.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![GNOME](https://img.shields.io/badge/GNOME-40%2B-4a90d9.svg)
+![GNOME](https://img.shields.io/badge/GNOME-40--50-4a90d9.svg)
 
 
 ## Features
@@ -196,7 +196,7 @@ Open **Extensions → System Monitor → Settings** to customize:
 ## Requirements
 
 - **GNOME Shell**:
-  - Main package (`extension.js`/`prefs.js`): 45, 46, 47, 48, 49, 50
+  - Modern package (`extension.js`/`prefs.js`): 45, 46, 47, 48, 49, 50
   - Legacy package (`extensionLegacy.js`/`prefsLegacy.js`): 40, 41, 42, 43, 44
 - **GPU Support** (optional):
   - NVIDIA: `nvidia-smi` must be in PATH
@@ -204,25 +204,19 @@ Open **Extensions → System Monitor → Settings** to customize:
 
 ## Validation
 
-Run all automated checks with one command:
+Run syntax, schema, metadata, packaging, and archive-integrity checks with:
 
 ```bash
 make check
 ```
 
-Build separate upload artifacts for GNOME 40-44 and GNOME 45-50:
+Build both GNOME upload artifacts without installing either:
 
 ```bash
 make pack-dual
 ```
 
-This runs:
-- JavaScript syntax checks for `extension.js`, `extensionLegacy.js`, `prefs.js`, and `prefsLegacy.js`
-- GSettings schema validation
-- `metadata.json` validation
-- `install.sh` shell syntax validation
-- Extension pack + zip integrity verification
-- Unit tests automatically, when a test runner is configured in the project
+Running `make` or `make install` detects the GNOME Shell major version and installs the matching variant. When a unit-test runner is configured, `make check` runs it automatically.
 
 ## Technical Details
 

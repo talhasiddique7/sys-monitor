@@ -2,4 +2,4 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 "$ROOT/pack-dual.sh"
-"$ROOT/install-variant.sh" gnome45-50
+"$ROOT/install-variant.sh"

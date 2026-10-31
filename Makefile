@@ -2,22 +2,21 @@ SHELL := /bin/bash
 UUID := $(shell jq -r '.uuid' metadata.json)
 PACK_OUT := $(UUID).shell-extension.zip
 
-.PHONY: check pack pack-zip pack-dual production install install-legacy
+.PHONY: check pack pack-zip pack-dual production install
 
 check:
 	./scripts/check-all.sh
 
-# Pack + install current GNOME (45-50) on this machine
+# Pack both supported variants, then install the one matching this GNOME Shell.
 pack:
 	./scripts/pack-dual.sh
-	./scripts/install-variant.sh gnome45-50
+	./scripts/install-variant.sh
 
-# Zip only — current GNOME variant, no install
+# Build both upload artifacts without installing either.
 pack-zip:
 	./scripts/pack-dual.sh
-	@echo "Artifacts in dist/ and $(PACK_OUT)"
+	@echo "Artifacts in dist/"
 
-# Both GNOME variants → dist/
 pack-dual:
 	./scripts/pack-dual.sh
 
@@ -25,7 +24,4 @@ pack-dual:
 production: check
 
 install:
-	./scripts/install-variant.sh gnome45-50
-
-install-legacy:
-	./scripts/install-variant.sh gnome40-44
+	./scripts/install-variant.sh
