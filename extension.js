@@ -124,6 +124,21 @@ async function getNetSpeed(iface = null) {
 let _gpuType = null; // 'nvidia' | 'amd' | 'intel' | 'none'
 let _gpuPath = null;
 let _gpuError = null;
+let _gpuTimeoutId = 0;
+let _gpuProcess = null;
+
+function stopIntelGpuSampling() {
+    if (_gpuTimeoutId) {
+        GLib.source_remove(_gpuTimeoutId);
+        _gpuTimeoutId = 0;
+    }
+
+    if (_gpuProcess) {
+        _gpuProcess.force_exit();
+        _gpuProcess = null;
+    }
+}
+
 async function detectGpu() {
     _gpuPath = null;
     _gpuError = null;
@@ -228,17 +243,23 @@ function parseIntelGpuSample(output) {
 }
 
 async function getIntelGpuPercent() {
-    let timedOut = false;
     try {
+        stopIntelGpuSampling();
         const proc = Gio.Subprocess.new(
             ['intel_gpu_top', '-J', '-s', '200', '-o', '-'],
             Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
         );
-        const timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 750, () => {
-            timedOut = true;
+        _gpuProcess = proc;
+        let timeoutId;
+        timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 750, () => {
+            if (_gpuTimeoutId === timeoutId)
+                _gpuTimeoutId = 0;
+            if (_gpuProcess === proc)
+                _gpuProcess = null;
             proc.force_exit();
             return GLib.SOURCE_REMOVE;
         });
+        _gpuTimeoutId = timeoutId;
 
         try {
             const [stdout, stderr] = await proc.communicate_utf8_async(null, null);
@@ -248,8 +269,12 @@ async function getIntelGpuPercent() {
             _gpuError = null;
             return utilization;
         } finally {
-            if (!timedOut)
+            if (_gpuTimeoutId === timeoutId) {
                 GLib.source_remove(timeoutId);
+                _gpuTimeoutId = 0;
+            }
+            if (_gpuProcess === proc)
+                _gpuProcess = null;
         }
     } catch (error) {
         const message = error.message || String(error);
@@ -1074,6 +1099,7 @@ export default class SysMonExtension extends Extension {
     }
 
     disable() {
+        stopIntelGpuSampling();
         if (this._timerId) {
             GLib.source_remove(this._timerId);
             this._timerId = null;
