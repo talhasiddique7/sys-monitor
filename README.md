@@ -3,18 +3,20 @@
 A lightweight, professional GNOME Shell extension that displays real-time system resource usage directly in your top panel.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![GNOME](https://img.shields.io/badge/GNOME-40--50-4a90d9.svg)
+![GNOME](https://img.shields.io/badge/GNOME-40--51-4a90d9.svg)
 
 
 ## Features
 
 - **CPU Usage** - Real-time CPU utilization percentage
-- **GPU Monitoring** - Auto-detects NVIDIA (via nvidia-smi) and AMD GPUs
+- **GPU Monitoring** - Supports NVIDIA (`nvidia-smi`), AMD (DRM sysfs), and Intel (`intel_gpu_top`)
 - **RAM Usage** - Memory consumption with percentage and detailed popup
 - **Swap Usage** - Swap space utilization
 - **Network Speed** - Live upload/download speeds in KB/s or MB/s
 - **Monochrome Mode** - Optional neutral indicators for users who prefer native-looking panel styling
 
+Version 9 supports GNOME Shell 40-51. GNOME 51 uses the modern extension package, and its
+`disable()` implementation remains synchronous as required by GNOME Shell 51.
 
 ## Architecture Diagram
 
@@ -196,11 +198,12 @@ Open **Extensions → System Monitor → Settings** to customize:
 ## Requirements
 
 - **GNOME Shell**:
-  - Modern package (`extension.js`/`prefs.js`): 45, 46, 47, 48, 49, 50
+  - Modern package (`extension.js`/`prefs.js`): 45, 46, 47, 48, 49, 50, 51
   - Legacy package (`extensionLegacy.js`/`prefsLegacy.js`): 40, 41, 42, 43, 44
 - **GPU Support** (optional):
   - NVIDIA: `nvidia-smi` must be in PATH
-  - AMD: `sysfs` interface at `/sys/class/drm/card0/device/gpu_busy_percent`
+  - AMD: `gpu_busy_percent` sysfs interface on a DRM card
+  - Intel: `intel_gpu_top` (from `intel-gpu-tools`) must be in PATH; it needs `CAP_PERFMON` access to the performance counters. If access is denied, the GPU card remains visible with the tool's error message.
 
 ## Validation
 
@@ -210,7 +213,7 @@ Run syntax, schema, metadata, packaging, and archive-integrity checks with:
 make check
 ```
 
-Build both GNOME upload artifacts without installing either:
+Build both GNOME upload artifacts (including the GNOME 51 package) without installing either:
 
 ```bash
 make pack-dual

@@ -56,11 +56,11 @@ pack_variant() {
 
 echo "==> Pack dual variants (shared stylesheet.css + icons)"
 pack_variant "gnome40-44" '["40","41","42","43","44"]' "extensionLegacy.js" "prefsLegacy.js"
-pack_variant "gnome45-50" '["45","46","47","48","49","50"]' "extension.js" "prefs.js"
+pack_variant "gnome45-51" '["45","46","47","48","49","50","51"]' "extension.js" "prefs.js"
 
 # Default local / EGO upload artifact = current GNOME line
-cp "${OUT_DIR}/${UUID}-gnome45-50.shell-extension.zip" "${ROOT_DIR}/${UUID}.shell-extension.zip"
-cp "${OUT_DIR}/${UUID}-gnome45-50.shell-extension.zip" "${ROOT_DIR}/sysmon.shell-extension.zip"
+cp "${OUT_DIR}/${UUID}-gnome45-51.shell-extension.zip" "${ROOT_DIR}/${UUID}.shell-extension.zip"
+cp "${OUT_DIR}/${UUID}-gnome45-51.shell-extension.zip" "${ROOT_DIR}/sysmon.shell-extension.zip"
 
 echo "==> Dual pack complete:"
 ls -lh "${OUT_DIR}/${UUID}"-*.shell-extension.zip

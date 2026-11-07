@@ -120,28 +120,179 @@ async function getNetSpeed(iface = null) {
     };
 }
 
-// GPU: tries nvidia-smi, then AMD sysfs
-let _gpuType = null; // 'nvidia' | 'amd' | 'none'
+// GPU: tries NVIDIA, AMD sysfs, then Intel's intel_gpu_top
+let _gpuType = null; // 'nvidia' | 'amd' | 'intel' | 'none'
+let _gpuPath = null;
+let _gpuError = null;
+let _gpuTimeoutId = 0;
+let _gpuProcess = null;
+
+function stopIntelGpuSampling() {
+    if (_gpuTimeoutId) {
+        GLib.source_remove(_gpuTimeoutId);
+        _gpuTimeoutId = 0;
+    }
+
+    if (_gpuProcess) {
+        _gpuProcess.force_exit();
+        _gpuProcess = null;
+    }
+}
+
 async function detectGpu() {
-    if (GLib.find_program_in_path('nvidia-smi')) {
+    _gpuPath = null;
+    _gpuError = null;
+    const hasNvidiaSmi = Boolean(GLib.find_program_in_path('nvidia-smi'));
+    const drmBase = Gio.File.new_for_path('/sys/class/drm');
+    if (!drmBase.query_exists(null)) {
+        _gpuType = hasNvidiaSmi ? 'nvidia' : 'none';
+        return;
+    }
+
+    let amdPath = null;
+    let hasNvidiaGpu = false;
+    let hasIntelGpu = false;
+    try {
+        const enumerator = drmBase.enumerate_children('standard::name', Gio.FileQueryInfoFlags.NONE, null);
+        let info;
+        while ((info = enumerator.next_file(null)) !== null) {
+            const card = info.get_name();
+            if (!/^card\d+$/.test(card))
+                continue;
+
+            const path = `/sys/class/drm/${card}/device/gpu_busy_percent`;
+            if (!amdPath && Gio.File.new_for_path(path).query_exists(null))
+                amdPath = path;
+
+            const vendor = (await readFileAsync(`/sys/class/drm/${card}/device/vendor`))?.trim();
+            if (vendor === '0x10de')
+                hasNvidiaGpu = true;
+            else if (vendor === '0x8086')
+                hasIntelGpu = true;
+        }
+        enumerator.close(null);
+    } catch (error) {
+        console.error(`SysMon GPU detection failed: ${error}`);
+    }
+
+    if (hasNvidiaGpu && hasNvidiaSmi) {
         _gpuType = 'nvidia';
         return;
     }
 
-    const amdFile = Gio.File.new_for_path('/sys/class/drm/card0/device/gpu_busy_percent');
-    if (amdFile.query_exists(null)) {
+    if (amdPath) {
         _gpuType = 'amd';
+        _gpuPath = amdPath;
+        return;
+    }
+
+    if (hasIntelGpu && GLib.find_program_in_path('intel_gpu_top')) {
+        _gpuType = 'intel';
         return;
     }
 
     _gpuType = 'none';
 }
 
+function parseIntelGpuSample(output) {
+    let sampleStart = -1;
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    let utilization = null;
+
+    for (let i = 0; i < output.length; i++) {
+        const char = output[i];
+        if (sampleStart < 0) {
+            if (char === '{') {
+                sampleStart = i;
+                depth = 1;
+            }
+            continue;
+        }
+
+        if (inString) {
+            if (escaped)
+                escaped = false;
+            else if (char === '\\')
+                escaped = true;
+            else if (char === '"')
+                inString = false;
+            continue;
+        }
+        if (char === '"') {
+            inString = true;
+        } else if (char === '{') {
+            depth++;
+        } else if (char === '}' && --depth === 0) {
+            try {
+                const sample = JSON.parse(output.slice(sampleStart, i + 1));
+                const engineValues = Object.values(sample.engines ?? {})
+                    .map(engine => Number.parseFloat(engine.busy))
+                    .filter(Number.isFinite);
+                if (engineValues.length > 0)
+                    utilization = Math.max(...engineValues);
+            } catch {
+                // Ignore incomplete or non-sample JSON objects in the output.
+            }
+            sampleStart = -1;
+        }
+    }
+
+    return utilization === null ? null : Math.max(0, Math.min(100, Math.round(utilization)));
+}
+
+async function getIntelGpuPercent() {
+    try {
+        stopIntelGpuSampling();
+        const proc = Gio.Subprocess.new(
+            ['intel_gpu_top', '-J', '-s', '200', '-o', '-'],
+            Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
+        );
+        _gpuProcess = proc;
+        let timeoutId;
+        timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 750, () => {
+            if (_gpuTimeoutId === timeoutId)
+                _gpuTimeoutId = 0;
+            if (_gpuProcess === proc)
+                _gpuProcess = null;
+            proc.force_exit();
+            return GLib.SOURCE_REMOVE;
+        });
+        _gpuTimeoutId = timeoutId;
+
+        try {
+            const [stdout, stderr] = await proc.communicate_utf8_async(null, null);
+            const utilization = parseIntelGpuSample(stdout);
+            if (utilization === null)
+                throw new Error(stderr.trim() || 'intel_gpu_top returned no GPU utilization sample');
+            _gpuError = null;
+            return utilization;
+        } finally {
+            if (_gpuTimeoutId === timeoutId) {
+                GLib.source_remove(timeoutId);
+                _gpuTimeoutId = 0;
+            }
+            if (_gpuProcess === proc)
+                _gpuProcess = null;
+        }
+    } catch (error) {
+        const message = error.message || String(error);
+        if (_gpuError !== message)
+            console.error(`SysMon Intel GPU sampling failed: ${message}`);
+        _gpuError = message;
+        return null;
+    }
+}
+
 async function getGpuPercent() {
     if (_gpuType === 'amd') {
-        const v = await readFileAsync('/sys/class/drm/card0/device/gpu_busy_percent');
+        const v = await readFileAsync(_gpuPath);
         return v ? parseInt(v.trim()) : 0;
     }
+
+    if (_gpuType === 'intel')
+        return getIntelGpuPercent();
 
     if (_gpuType === 'nvidia') {
         try {
@@ -732,7 +883,10 @@ class Indicator extends PanelMenu.Button {
             this._refreshMetricCard(this._gpuItem, gpu);
             this._gpuItem.detailLbl.set_text(`${_formatGpuType()} load`);
         } else {
-            this._gpuItem.detailLbl.set_text('No supported GPU found');
+            this._gpuItem.pctLbl.set_text('—');
+            this._gpuItem.detailLbl.set_text(_gpuType === 'none'
+                ? 'No supported GPU found'
+                : `${_formatGpuType()} monitoring unavailable: ${_gpuError?.split('\n')[0] || 'no reading'}`);
         }
 
         if (net) {
@@ -809,7 +963,7 @@ class Indicator extends PanelMenu.Button {
         const showSwap = this._settings.get_boolean('show-swap');
         const showNetwork = this._settings.get_boolean('show-network');
         const showGpu = this._settings.get_boolean('show-gpu');
-        const hasGpu = this._lastData ? this._lastData.gpu !== null : false;
+        const hasGpu = _gpuType !== 'none';
 
         this._cpuGroup.box.visible = showCpu;
         this._ramGroup.box.visible = showRam;
@@ -869,6 +1023,8 @@ function _formatGpuType() {
         return 'NVIDIA';
     if (_gpuType === 'amd')
         return 'AMD';
+    if (_gpuType === 'intel')
+        return 'Intel';
     return 'GPU';
 }
 
@@ -943,6 +1099,7 @@ export default class SysMonExtension extends Extension {
     }
 
     disable() {
+        stopIntelGpuSampling();
         if (this._timerId) {
             GLib.source_remove(this._timerId);
             this._timerId = null;

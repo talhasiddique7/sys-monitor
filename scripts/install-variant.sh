@@ -8,7 +8,7 @@ VARIANT="${1:-}"
 if [[ -z "$VARIANT" ]]; then
     if ! SHELL_VERSION_OUTPUT="$(gnome-shell --version 2>&1)"; then
         echo "ERROR: could not detect the GNOME Shell version." >&2
-        echo "Ensure gnome-shell is installed or pass gnome40-44/gnome45-50 explicitly." >&2
+        echo "Ensure gnome-shell is installed or pass gnome40-44/gnome45-51 explicitly." >&2
         exit 1
     fi
 
@@ -21,18 +21,18 @@ if [[ -z "$VARIANT" ]]; then
 
     case "$SHELL_MAJOR" in
         40|41|42|43|44) VARIANT="gnome40-44" ;;
-        45|46|47|48|49|50) VARIANT="gnome45-50" ;;
+        45|46|47|48|49|50|51) VARIANT="gnome45-51" ;;
         *)
-            echo "ERROR: GNOME Shell ${SHELL_MAJOR} is not supported (supported versions: 40-50)." >&2
+            echo "ERROR: GNOME Shell ${SHELL_MAJOR} is not supported (supported versions: 40-51)." >&2
             exit 1
             ;;
     esac
 fi
 
 case "$VARIANT" in
-    gnome40-44|gnome45-50) ;;
+    gnome40-44|gnome45-51) ;;
     *)
-        echo "ERROR: unknown variant: ${VARIANT} (expected gnome40-44 or gnome45-50)." >&2
+        echo "ERROR: unknown variant: ${VARIANT} (expected gnome40-44 or gnome45-51)." >&2
         exit 1
         ;;
 esac
