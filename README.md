@@ -244,7 +244,7 @@ Click any panel indicator to open the detailed popup with progress bars:
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues or pull requests.
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch, testing, and pull request workflow.
 
 ## License
 
