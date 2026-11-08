@@ -266,6 +266,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch
 ## License
 
 MIT License - see LICENSE file for details.
+The dropdown icon is from [Lucide](https://lucide.dev) (ISC license); see `icons/LICENSE-lucide.txt`.
 
 ---
 

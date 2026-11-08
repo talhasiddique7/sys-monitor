@@ -449,6 +449,27 @@ function makePanelIcon(ext, iconName, colorClass) {
     return icon;
 }
 
+function makeDropdownIcon(ext) {
+    const icon = new St.Icon({
+        style_class: 'sysmon-panel-chevron',
+        icon_size: 16,
+        y_align: Clutter.ActorAlign.CENTER,
+    });
+
+    const file = ext.path
+        ? Gio.File.new_for_path(
+            GLib.build_filenamev([ext.path, 'icons', 'monitor-activity-symbolic.svg'])
+        )
+        : null;
+
+    if (file && file.query_exists(null))
+        icon.gicon = new Gio.FileIcon({file});
+    else
+        icon.icon_name = 'pan-down-symbolic';
+
+    return icon;
+}
+
 const CHART_POINTS = 28;
 
 const METRIC_THEMES = {
@@ -678,12 +699,7 @@ class Indicator extends PanelMenu.Button {
         this._panelBox.add_child(this._upDownSep);
         this._panelBox.add_child(this._downGroup.box);
 
-        this._chevron = new St.Icon({
-            icon_name: 'pan-down-symbolic',
-            style_class: 'sysmon-panel-chevron',
-            icon_size: 12,
-            y_align: Clutter.ActorAlign.CENTER,
-        });
+        this._chevron = makeDropdownIcon(this._ext);
         this._panelBox.add_child(this._chevron);
 
         this.add_child(this._panelBox);
