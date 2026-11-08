@@ -48,6 +48,9 @@ need_cmd glib-compile-schemas
 need_cmd gnome-extensions
 need_cmd unzip
 need_cmd bash
+need_cmd msgfmt
+
+run_step "Build translations" "${ROOT_DIR}/scripts/build-locale.sh"
 
 run_step "Syntax check: extension.js" node --check "${ROOT_DIR}/extension.js"
 run_step "Syntax check: extensionLegacy.js" node --check "${ROOT_DIR}/extensionLegacy.js"
@@ -58,6 +61,7 @@ run_step "Schema validation" glib-compile-schemas --strict --dry-run "${ROOT_DIR
 run_step "Metadata JSON validation" jq empty "${ROOT_DIR}/metadata.json"
 run_step "Installer and packaging syntax validation" bash -n \
     "${ROOT_DIR}/install.sh" \
+    "${ROOT_DIR}/scripts/build-locale.sh" \
     "${ROOT_DIR}/scripts/pack-dual.sh" \
     "${ROOT_DIR}/scripts/install-variant.sh" \
     "${ROOT_DIR}/scripts/pack-install.sh" \
@@ -69,6 +73,8 @@ PACK_ARGS=(
     "${ROOT_DIR}"
     --force
     --out-dir "${TMP_DIR}"
+    --podir="${ROOT_DIR}/po"
+    --gettext-domain="$(jq -r '."gettext-domain" // .uuid' "${ROOT_DIR}/metadata.json")"
     --extra-source=icons
 )
 run_step "Pack extension" gnome-extensions pack "${PACK_ARGS[@]}"

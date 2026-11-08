@@ -139,10 +139,13 @@ class node_gnome_shell,node_nvidia_cli toneIndigo
 
 ### Panel Display
 
-The extension adds compact, icon-based metrics to your GNOME panel:
+The extension adds compact, icon-based metrics to your GNOME panel, followed by a dropdown arrow:
 - CPU, RAM, Swap percentages with dynamic color coding
 - Upload and download speeds
-- Click for detailed popup with progress bars
+- The numbers can be hidden to keep only the icons
+- The arrow opens the popup, where the graphs live
+
+Panel metrics and popup graphs are configured independently, so the panel can stay compact while the popup shows every graph you care about.
 
 ## Installation
 
@@ -189,11 +192,25 @@ Open **Extensions → System Monitor → Settings** to customize:
 |---------|-------------|---------|
 | Refresh interval | Update frequency (1-10 seconds) | 2s |
 | Monochrome mode | Use one neutral color instead of status colors | Disabled |
-| Show CPU | Display CPU usage in panel & popup | Enabled |
-| Show RAM | Display RAM usage in panel & popup | Enabled |
-| Show GPU | Display GPU in popup | Enabled |
-| Show Swap | Display swap in panel & popup | Enabled |
-| Show Network | Display network speeds | Enabled |
+| Show values | Show numbers next to the panel icons | Enabled |
+| Panel: CPU | Display CPU usage in the panel | Enabled |
+| Panel: RAM | Display RAM usage in the panel | Enabled |
+| Panel: Swap | Display swap usage in the panel | Enabled |
+| Panel: Network | Display upload and download speeds in the panel | Enabled |
+| Popup: CPU graph | Display the CPU graph and temperature in the popup | Enabled |
+| Popup: RAM graph | Display the RAM graph in the popup | Enabled |
+| Popup: GPU graph | Display GPU load in the popup | Enabled |
+| Popup: Swap graph | Display the swap graph in the popup | Enabled |
+| Popup: Network graphs | Display upload and download graphs in the popup | Enabled |
+
+## Translations
+
+UI strings use gettext. Translations live in `po/` and are compiled into the
+package with `gnome-extensions pack --podir=po`.
+
+- Spanish (Spain) is included in `po/es.po`.
+- To add a language, copy `po/es.po` to `po/<lang>.po`, translate it and run
+  `./scripts/build-locale.sh` to validate it locally.
 
 ## Requirements
 

@@ -42,6 +42,12 @@ done
     exit 1
 }
 
+DOMAIN="$(jq -r '."gettext-domain" // .uuid' "$TMP_DIR/metadata.json")"
+[[ -f "$TMP_DIR/locale/es/LC_MESSAGES/${DOMAIN}.mo" ]] || {
+    echo "ERROR: missing Spanish translation (${DOMAIN}.mo) in $VARIANT zip" >&2
+    exit 1
+}
+
 glib-compile-schemas --strict --dry-run "$TMP_DIR/schemas"
 
 if [[ -n "$EXPECTED_VERSIONS" ]]; then

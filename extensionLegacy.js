@@ -10,6 +10,11 @@ const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const _ = ExtensionUtils.gettext;
 
+function _f(template, ...args) {
+    let index = 0;
+    return template.replace(/%s/g, () => String(args[index++] ?? ''));
+}
+
 Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
 Gio._promisify(Gio.Subprocess.prototype, 'communicate_utf8_async', 'communicate_utf8_finish');
 
@@ -535,17 +540,22 @@ function makeWaveChart(color, height = 52) {
  const Indicator = GObject.registerClass(
  class Indicator extends PanelMenu.Button {
      _init(ext) {
-         super._init(0.0, 'System Monitor');
+         super._init(0.0, _('System Monitor'));
          this._ext = ext;
          this._settings = ext.getSettings();
          this._lastData = null;
          this._settingsChangedIds = [
              'monochrome-mode',
+             'panel-show-values',
              'show-cpu',
              'show-ram',
-             'show-gpu',
              'show-swap',
              'show-network',
+             'popup-show-cpu',
+             'popup-show-ram',
+             'popup-show-gpu',
+             'popup-show-swap',
+             'popup-show-network',
          ].map(key => this._settings.connect(`changed::${key}`, () => {
              if (this._lastData)
                  this.update(this._lastData);
@@ -588,6 +598,14 @@ function makeWaveChart(color, height = 52) {
          this._panelBox.add_child(this._upDownSep);
          this._panelBox.add_child(this._downGroup.box);
 
+         this._chevron = new St.Icon({
+             icon_name: 'pan-down-symbolic',
+             style_class: 'sysmon-panel-chevron',
+             icon_size: 12,
+             y_align: Clutter.ActorAlign.CENTER,
+         });
+         this._panelBox.add_child(this._chevron);
+
          this.add_child(this._panelBox);
 
          this._buildPopup();
@@ -599,7 +617,7 @@ function makeWaveChart(color, height = 52) {
     _buildPopup() {
          const titleItem = new PopupMenu.PopupBaseMenuItem({ reactive: false, style_class: 'sysmon-popup-item' });
          const header = new St.BoxLayout({ style_class: 'sysmon-popup-header', x_expand: true });
-         header.add_child(new St.Label({ text: 'System Monitor', style_class: 'sysmon-popup-title', x_expand: true, y_align: Clutter.ActorAlign.CENTER }));
+         header.add_child(new St.Label({ text: _('System Monitor'), style_class: 'sysmon-popup-title', x_expand: true, y_align: Clutter.ActorAlign.CENTER }));
          header.add_child(new St.Icon({ icon_name: 'utilities-system-monitor-symbolic', style_class: 'sysmon-header-icon' }));
          const prefsBtn = new St.Button({
              style_class: 'sysmon-header-btn',
@@ -611,23 +629,23 @@ function makeWaveChart(color, height = 52) {
          titleItem.add_child(header);
          this.menu.addMenuItem(titleItem);
 
-         this._cpuItem = this._makeMetricCard('cpu', 'CPU', 'Processor load', true);
+         this._cpuItem = this._makeMetricCard('cpu', 'CPU', _('Processor load'), true);
          this.menu.addMenuItem(this._cpuItem.item);
 
-         this._gpuItem = this._makeMetricCard('gpu', 'GPU', 'Graphics load');
+         this._gpuItem = this._makeMetricCard('gpu', 'GPU', _('Graphics load'));
          this.menu.addMenuItem(this._gpuItem.item);
 
-         this._ramItem = this._makeMetricCard('ram', 'RAM', 'Memory in use');
+         this._ramItem = this._makeMetricCard('ram', 'RAM', _('Memory in use'));
          this.menu.addMenuItem(this._ramItem.item);
 
-         this._swapItem = this._makeMetricCard('swap', 'Swap', 'Swap in use');
+         this._swapItem = this._makeMetricCard('swap', 'Swap', _('Swap in use'));
          this.menu.addMenuItem(this._swapItem.item);
 
          const netItem = new PopupMenu.PopupBaseMenuItem({ reactive: false, style_class: 'sysmon-popup-item' });
          const netGrid = new St.BoxLayout({ style_class: 'sysmon-net-grid', x_expand: true });
 
-         this._upCard = this._makeNetCard('Upload', 'upload', '#34d399', 'up');
-         this._downCard = this._makeNetCard('Download', 'download', '#60a5fa', 'down');
+         this._upCard = this._makeNetCard(_('Upload'), 'upload', '#34d399', 'up');
+         this._downCard = this._makeNetCard(_('Download'), 'download', '#60a5fa', 'down');
 
          netGrid.add_child(this._upCard.box);
          netGrid.add_child(this._downCard.box);
@@ -695,7 +713,7 @@ function makeWaveChart(color, height = 52) {
 
          const valRow = new St.BoxLayout({ vertical: false, style_class: 'sysmon-net-value-row' });
          const val = new St.Label({ text: '0', style_class: `sysmon-net-value tone-${tone}` });
-         const unit = new St.Label({ text: 'KB/s', style_class: 'sysmon-net-unit' });
+         const unit = new St.Label({ text: _('KB/s'), style_class: 'sysmon-net-unit' });
          valRow.add_child(val);
          valRow.add_child(unit);
 
@@ -723,23 +741,23 @@ function makeWaveChart(color, height = 52) {
          }
 
          this._refreshMetricCard(this._cpuItem, cpu);
-         this._cpuItem.detailLbl.set_text('Processor load');
+         this._cpuItem.detailLbl.set_text(_('Processor load'));
          this._refreshCpuTemp(cpuTemp);
          this._refreshMetricCard(this._ramItem, mem.ramPct);
          this._ramItem.detailLbl.set_text(`${_formatMemory(mem.ramUsedMB)} / ${_formatMemory(mem.ramTotalMB)}`);
          this._refreshMetricCard(this._swapItem, mem.swapPct);
          this._swapItem.detailLbl.set_text(mem.swapTotalMB > 0
              ? `${_formatMemory(mem.swapUsedMB)} / ${_formatMemory(mem.swapTotalMB)}`
-             : 'No swap configured');
+             : _('No swap configured'));
 
          if (gpu !== null) {
              this._refreshMetricCard(this._gpuItem, gpu);
-             this._gpuItem.detailLbl.set_text(`${_formatGpuType()} load`);
+             this._gpuItem.detailLbl.set_text(_f(_('%s load'), _formatGpuType()));
          } else {
              this._gpuItem.pctLbl.set_text('—');
              this._gpuItem.detailLbl.set_text(_gpuType === 'none'
-                 ? 'No supported GPU found'
-                 : `${_formatGpuType()} monitoring unavailable: ${_gpuError?.split('\n')[0] || 'no reading'}`);
+                 ? _('No supported GPU found')
+                 : _f(_('%s monitoring unavailable: %s'), _formatGpuType(), _gpuError?.split('\n')[0] || _('no reading')));
          }
 
          if (net) {
@@ -814,7 +832,13 @@ function makeWaveChart(color, height = 52) {
          const showRam = this._settings.get_boolean('show-ram');
          const showSwap = this._settings.get_boolean('show-swap');
          const showNetwork = this._settings.get_boolean('show-network');
-         const showGpu = this._settings.get_boolean('show-gpu');
+         const showValues = this._settings.get_boolean('panel-show-values');
+
+         const popupCpu = this._settings.get_boolean('popup-show-cpu');
+         const popupRam = this._settings.get_boolean('popup-show-ram');
+         const popupSwap = this._settings.get_boolean('popup-show-swap');
+         const popupNetwork = this._settings.get_boolean('popup-show-network');
+         const popupGpu = this._settings.get_boolean('popup-show-gpu');
          const hasGpu = _gpuType !== 'none';
 
          this._cpuGroup.box.visible = showCpu;
@@ -823,16 +847,22 @@ function makeWaveChart(color, height = 52) {
          this._upGroup.box.visible = showNetwork;
          this._downGroup.box.visible = showNetwork;
 
-         this._cpuRamSep.visible = showCpu && showRam;
-         this._swapSep.visible = showSwap && (showCpu || showRam);
-         this._netSep.visible = showNetwork && (showCpu || showRam || showSwap);
-         this._upDownSep.visible = showNetwork;
+         this._cpuGroup.value.visible = showValues;
+         this._ramGroup.value.visible = showValues;
+         this._swapGroup.value.visible = showValues;
+         this._upGroup.value.visible = showValues;
+         this._downGroup.value.visible = showValues;
 
-         this._cpuItem.item.visible = showCpu;
-         this._ramItem.item.visible = showRam;
-         this._swapItem.item.visible = showSwap;
-         this._gpuItem.item.visible = showGpu && hasGpu;
-         this._netItem.visible = showNetwork;
+         this._cpuRamSep.visible = showValues && showCpu && showRam;
+         this._swapSep.visible = showValues && showSwap && (showCpu || showRam);
+         this._netSep.visible = showValues && showNetwork && (showCpu || showRam || showSwap);
+         this._upDownSep.visible = showValues && showNetwork;
+
+         this._cpuItem.item.visible = popupCpu;
+         this._ramItem.item.visible = popupRam;
+         this._swapItem.item.visible = popupSwap;
+         this._gpuItem.item.visible = popupGpu && hasGpu;
+         this._netItem.visible = popupNetwork;
 
          this._applyPanelStaticColor(this._upGroup, 'color-up');
          this._applyPanelStaticColor(this._downGroup, 'color-down');
@@ -853,25 +883,25 @@ function makeWaveChart(color, height = 52) {
  });
 
 function _formatSpeed(kb) {
-    if (kb >= 1024) return `${(kb/1024).toFixed(1)}MB/s`;
-    return `${kb}KB/s`;
+    if (kb >= 1024) return `${(kb/1024).toFixed(1)}${_('MB/s')}`;
+    return `${kb}${_('KB/s')}`;
  }
 
  function _splitSpeed(kb) {
-     if (kb >= 1024) return { val: (kb/1024).toFixed(1), unit: 'MB/s' };
-     return { val: kb.toString(), unit: 'KB/s' };
+     if (kb >= 1024) return { val: (kb/1024).toFixed(1), unit: _('MB/s') };
+     return { val: kb.toString(), unit: _('KB/s') };
  }
 
  function _formatMemory(mb) {
-     if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GiB`;
-     return `${mb} MiB`;
+     if (mb >= 1024) return `${(mb / 1024).toFixed(1)} ${_('GiB')}`;
+     return `${mb} ${_('MiB')}`;
  }
 
  function _formatGpuType() {
      if (_gpuType === 'nvidia') return 'NVIDIA';
      if (_gpuType === 'amd') return 'AMD';
      if (_gpuType === 'intel') return 'Intel';
-     return 'GPU';
+     return _('GPU');
  }
 
  // ── Main Extension ─────────────────────────────────────────────────────────
@@ -968,5 +998,6 @@ class SysMonExtension {
 }
 
 function init() {
+    ExtensionUtils.initTranslations();
     return new SysMonExtension();
 }

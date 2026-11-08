@@ -40,6 +40,11 @@
     padding: 0 3px;
 }
 
+.sysmon-panel-chevron {
+    icon-size: 12px;
+    color: rgba(246,245,244,0.55);
+}
+
 .sysmon-popup-menu {
     padding: 6px 0 12px;
 }

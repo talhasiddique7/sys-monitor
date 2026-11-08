@@ -9,12 +9,13 @@ export default class SysMonPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
 
-        window.set_default_size(480, 420);
+        window.set_default_size(480, 560);
 
         const page = new Adw.PreferencesPage();
-        const group = new Adw.PreferencesGroup({
-            title: _('Display'),
-            description: _('Choose which resources appear in the panel and popup.'),
+
+        const generalGroup = new Adw.PreferencesGroup({
+            title: _('General'),
+            description: _('Refresh rate and appearance.'),
         });
 
         const intervalRow = new Adw.SpinRow({
@@ -27,24 +28,64 @@ export default class SysMonPreferences extends ExtensionPreferences {
             }),
         });
         settings.bind('refresh-interval', intervalRow, 'value', Gio.SettingsBindFlags.DEFAULT);
-        group.add(intervalRow);
+        generalGroup.add(intervalRow);
 
-        const toggles = [
-            ['monochrome-mode', _('Monochrome mode'), _('Use one neutral color instead of status colors.')],
-            ['show-cpu', _('Show CPU'), _('Display processor usage.')],
-            ['show-ram', _('Show RAM'), _('Display memory usage.')],
-            ['show-gpu', _('Show GPU'), _('Display GPU usage when supported.')],
-            ['show-swap', _('Show Swap'), _('Display swap usage.')],
-            ['show-network', _('Show Network'), _('Display upload and download speeds.')],
+        const monochromeRow = new Adw.SwitchRow({
+            title: _('Monochrome mode'),
+            subtitle: _('Use one neutral color instead of status colors.'),
+        });
+        settings.bind('monochrome-mode', monochromeRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        generalGroup.add(monochromeRow);
+
+        page.add(generalGroup);
+
+        const panelGroup = new Adw.PreferencesGroup({
+            title: _('Panel'),
+            description: _('Choose what the panel button shows. The arrow opens the popup.'),
+        });
+
+        const valuesRow = new Adw.SwitchRow({
+            title: _('Show values'),
+            subtitle: _('Hide the numbers to keep only the icons in the panel.'),
+        });
+        settings.bind('panel-show-values', valuesRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        panelGroup.add(valuesRow);
+
+        const panelToggles = [
+            ['show-cpu', _('CPU'), _('Display CPU usage in the panel.')],
+            ['show-ram', _('RAM'), _('Display memory usage in the panel.')],
+            ['show-swap', _('Swap'), _('Display swap usage in the panel.')],
+            ['show-network', _('Network'), _('Display upload and download speeds in the panel.')],
         ];
 
-        for (const [key, label, subtitle] of toggles) {
+        for (const [key, label, subtitle] of panelToggles) {
             const row = new Adw.SwitchRow({title: label, subtitle});
             settings.bind(key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
-            group.add(row);
+            panelGroup.add(row);
         }
 
-        page.add(group);
+        page.add(panelGroup);
+
+        const popupGroup = new Adw.PreferencesGroup({
+            title: _('Popup'),
+            description: _('Choose which graphs appear in the popup.'),
+        });
+
+        const popupToggles = [
+            ['popup-show-cpu', _('CPU graph'), _('Show the CPU graph and temperature.')],
+            ['popup-show-ram', _('RAM graph'), _('Show the memory graph.')],
+            ['popup-show-gpu', _('GPU graph'), _('Show GPU load when supported.')],
+            ['popup-show-swap', _('Swap graph'), _('Show the swap graph.')],
+            ['popup-show-network', _('Network graphs'), _('Show upload and download graphs.')],
+        ];
+
+        for (const [key, label, subtitle] of popupToggles) {
+            const row = new Adw.SwitchRow({title: label, subtitle});
+            settings.bind(key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
+            popupGroup.add(row);
+        }
+
+        page.add(popupGroup);
         window.add(page);
     }
 }
