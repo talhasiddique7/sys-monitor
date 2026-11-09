@@ -778,7 +778,7 @@ class Indicator extends PanelMenu.Button {
             style_class: 'sysmon-popup-item',
         });
         const card = new St.BoxLayout({
-            orientation: Clutter.Orientation.HORIZONTAL,
+            ...boxLayoutDirection(false),
             x_expand: true,
             style_class: 'sysmon-metric-card',
         });
@@ -786,7 +786,7 @@ class Indicator extends PanelMenu.Button {
         const iconWrap = makeIconBadge(this._ext, theme.icon, theme.tone, 'metric');
 
         const body = new St.BoxLayout({
-            orientation: Clutter.Orientation.VERTICAL,
+            ...boxLayoutDirection(true),
             x_expand: true,
             y_align: Clutter.ActorAlign.CENTER,
             style_class: 'sysmon-metric-body',
@@ -796,14 +796,14 @@ class Indicator extends PanelMenu.Button {
         body.add_child(detailLbl);
 
         const rightCol = new St.BoxLayout({
-            orientation: Clutter.Orientation.VERTICAL,
+            ...boxLayoutDirection(true),
             x_align: Clutter.ActorAlign.END,
             y_align: Clutter.ActorAlign.CENTER,
             style_class: 'sysmon-metric-side',
         });
 
         const stats = new St.BoxLayout({
-            orientation: Clutter.Orientation.HORIZONTAL,
+            ...boxLayoutDirection(false),
             x_align: Clutter.ActorAlign.END,
             style_class: 'sysmon-metric-stats',
         });
@@ -866,17 +866,15 @@ class Indicator extends PanelMenu.Button {
 
     _makeNetCard(title, iconName, accentColor, tone) {
         const box = new St.BoxLayout({
-            orientation: Clutter.Orientation.VERTICAL,
+            ...boxLayoutDirection(true),
             x_expand: true,
             style_class: 'sysmon-net-card',
         });
-
-
-        const top = new St.BoxLayout({orientation: Clutter.Orientation.HORIZONTAL, style_class: 'sysmon-net-top'});
+        const top = new St.BoxLayout({...boxLayoutDirection(false), style_class: 'sysmon-net-top'});
         top.add_child(makeIconBadge(this._ext, iconName, tone, 'net'));
         top.add_child(new St.Label({text: title, style_class: 'sysmon-net-label'}));
 
-        const valRow = new St.BoxLayout({orientation: Clutter.Orientation.HORIZONTAL, style_class: 'sysmon-net-value-row'});
+        const valRow = new St.BoxLayout({...boxLayoutDirection(false), style_class: 'sysmon-net-value-row'});
         const val = new St.Label({text: '0', style_class: `sysmon-net-value tone-${tone}`});
         const unit = new St.Label({text: 'KB/s', style_class: 'sysmon-net-unit'});
         valRow.add_child(val);
