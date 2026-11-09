@@ -40,6 +40,11 @@
     padding: 0 3px;
 }
 
+.sysmon-panel-chevron {
+    icon-size: 16px;
+    opacity: 0.9;
+}
+
 .sysmon-popup-menu {
     padding: 6px 0 12px;
 }

@@ -30,7 +30,7 @@ for file in metadata.json extension.js prefs.js stylesheet.css stylesheet-light.
     [[ -f "$TMP_DIR/$file" ]] || { echo "ERROR: missing $file in $VARIANT zip" >&2; exit 1; }
 done
 
-for icon in cpu download gpu ram swap upload; do
+for icon in cpu download gpu ram swap upload monitor-activity; do
     [[ -f "$TMP_DIR/icons/${icon}-symbolic.svg" ]] || {
         echo "ERROR: missing icons/${icon}-symbolic.svg in $VARIANT zip" >&2
         exit 1
@@ -39,6 +39,12 @@ done
 
 [[ -f "$TMP_DIR/schemas/org.gnome.shell.extensions.sysmon.gschema.xml" ]] || {
     echo "ERROR: missing gschema in $VARIANT zip" >&2
+    exit 1
+}
+
+DOMAIN="$(jq -r '."gettext-domain" // .uuid' "$TMP_DIR/metadata.json")"
+[[ -f "$TMP_DIR/locale/es/LC_MESSAGES/${DOMAIN}.mo" ]] || {
+    echo "ERROR: missing Spanish translation (${DOMAIN}.mo) in $VARIANT zip" >&2
     exit 1
 }
 
