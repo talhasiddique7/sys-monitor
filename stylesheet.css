@@ -42,8 +42,7 @@
 
 .sysmon-panel-chevron {
     icon-size: 16px;
-    -st-icon-style: symbolic;
-    color: rgba(246,245,244,0.55);
+    opacity: 0.9;
 }
 
 .sysmon-popup-menu {
