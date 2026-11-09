@@ -18,12 +18,15 @@ need_cmd unzip
 need_cmd bash
 
 UUID="$(jq -r '.uuid' "${ROOT_DIR}/metadata.json")"
+DOMAIN="$(jq -r '."gettext-domain" // .uuid' "${ROOT_DIR}/metadata.json")"
 mkdir -p "${OUT_DIR}"
 TMP_ROOT="$(mktemp -d)"
 cleanup() {
     rm -rf "${TMP_ROOT}"
 }
 trap cleanup EXIT
+
+bash "${ROOT_DIR}/scripts/build-locale.sh"
 
 pack_variant() {
     local variant="$1"
@@ -43,7 +46,7 @@ pack_variant() {
     jq --argjson versions "${shell_versions_json}" '."shell-version" = $versions' \
         "${ROOT_DIR}/metadata.json" > "${tmp_dir}/metadata.json"
 
-    gnome-extensions pack "${tmp_dir}" --force --out-dir "${tmp_dir}" --extra-source=icons --extra-source=stylesheet-light.css --extra-source=stylesheet-dark.css >/dev/null
+    gnome-extensions pack "${tmp_dir}" --force --out-dir "${tmp_dir}" --podir="${ROOT_DIR}/po" --gettext-domain="${DOMAIN}" --extra-source=icons --extra-source=stylesheet-light.css --extra-source=stylesheet-dark.css >/dev/null
 
     local packed_zip="${tmp_dir}/${UUID}.shell-extension.zip"
     local output_zip="${OUT_DIR}/${UUID}-${variant}.shell-extension.zip"

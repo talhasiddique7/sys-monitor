@@ -1,0 +1,204 @@
+# Spanish (Spain) translation for the System Monitor GNOME Shell extension.
+# This file is distributed under the same license as the extension (MIT).
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sysmonitor@talhasiddique7\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-09 00:00+0100\n"
+"PO-Revision-Date: 2026-11-09 00:00+0100\n"
+"Last-Translator: gnacho <vnacho@proton.me>\n"
+"Language-Team: Spanish (Spain)\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: extension.js extensionLegacy.js prefs.js
+msgid "System Monitor"
+msgstr "Monitor del sistema"
+
+#: extension.js extensionLegacy.js
+msgid "Processor load"
+msgstr "Carga del procesador"
+
+#: extension.js extensionLegacy.js
+msgid "Graphics load"
+msgstr "Carga gráfica"
+
+#: extension.js extensionLegacy.js
+msgid "Memory in use"
+msgstr "Memoria en uso"
+
+#: extension.js extensionLegacy.js
+msgid "Swap in use"
+msgstr "Swap en uso"
+
+#: extension.js extensionLegacy.js
+msgid "No swap configured"
+msgstr "Sin swap configurada"
+
+#: extension.js extensionLegacy.js
+msgid "%s load"
+msgstr "Carga de %s"
+
+#: extension.js extensionLegacy.js
+msgid "No supported GPU found"
+msgstr "No se ha encontrado una GPU compatible"
+
+#: extension.js extensionLegacy.js
+msgid "%s monitoring unavailable: %s"
+msgstr "Monitorización de %s no disponible: %s"
+
+#: extension.js extensionLegacy.js
+msgid "no reading"
+msgstr "sin lectura"
+
+#: extension.js extensionLegacy.js
+msgid "Upload"
+msgstr "Subida"
+
+#: extension.js extensionLegacy.js
+msgid "Download"
+msgstr "Bajada"
+
+#: extension.js extensionLegacy.js
+msgid "MB/s"
+msgstr "MB/s"
+
+#: extension.js extensionLegacy.js
+msgid "KB/s"
+msgstr "KB/s"
+
+#: extension.js extensionLegacy.js
+msgid "GiB"
+msgstr "GiB"
+
+#: extension.js extensionLegacy.js
+msgid "MiB"
+msgstr "MiB"
+
+#: extension.js extensionLegacy.js
+msgid "GPU"
+msgstr "GPU"
+
+#: prefs.js prefsLegacy.js
+msgid "General"
+msgstr "General"
+
+#: prefs.js
+msgid "Refresh rate and appearance."
+msgstr "Frecuencia de actualización y aspecto."
+
+#: prefs.js prefsLegacy.js
+msgid "Refresh interval (seconds)"
+msgstr "Intervalo de actualización (segundos)"
+
+#: prefs.js
+msgid "Lower values update faster and use slightly more CPU."
+msgstr "Los valores bajos actualizan más rápido y usan algo más de CPU."
+
+#: prefs.js prefsLegacy.js
+msgid "Monochrome mode"
+msgstr "Modo monocromo"
+
+#: prefs.js
+msgid "Use one neutral color instead of status colors."
+msgstr "Usa un color neutro en vez de los colores de estado."
+
+#: prefs.js prefsLegacy.js
+msgid "Panel"
+msgstr "Panel"
+
+#: prefs.js
+msgid "Choose what the panel button shows. The arrow opens the popup."
+msgstr "Elige qué muestra el botón del panel. La flecha abre el desplegable."
+
+#: prefs.js prefsLegacy.js
+msgid "Show values"
+msgstr "Mostrar valores"
+
+#: prefs.js
+msgid "Hide the numbers to keep only the icons in the panel."
+msgstr "Oculta los números para dejar solo los iconos en el panel."
+
+#: prefs.js prefsLegacy.js
+msgid "CPU"
+msgstr "CPU"
+
+#: prefs.js
+msgid "Display CPU usage in the panel."
+msgstr "Muestra el uso de CPU en el panel."
+
+#: prefs.js prefsLegacy.js
+msgid "RAM"
+msgstr "RAM"
+
+#: prefs.js
+msgid "Display memory usage in the panel."
+msgstr "Muestra el uso de memoria en el panel."
+
+#: prefs.js prefsLegacy.js
+msgid "Swap"
+msgstr "Swap"
+
+#: prefs.js
+msgid "Display swap usage in the panel."
+msgstr "Muestra el uso de swap en el panel."
+
+#: prefs.js prefsLegacy.js
+msgid "Network"
+msgstr "Red"
+
+#: prefs.js
+msgid "Display upload and download speeds in the panel."
+msgstr "Muestra las velocidades de subida y bajada en el panel."
+
+#: prefs.js prefsLegacy.js
+msgid "Popup"
+msgstr "Desplegable"
+
+#: prefs.js
+msgid "Choose which graphs appear in the popup."
+msgstr "Elige qué gráficas aparecen en el desplegable."
+
+#: prefs.js prefsLegacy.js
+msgid "CPU graph"
+msgstr "Gráfica de CPU"
+
+#: prefs.js
+msgid "Show the CPU graph and temperature."
+msgstr "Muestra la gráfica de CPU y la temperatura."
+
+#: prefs.js prefsLegacy.js
+msgid "RAM graph"
+msgstr "Gráfica de RAM"
+
+#: prefs.js
+msgid "Show the memory graph."
+msgstr "Muestra la gráfica de memoria."
+
+#: prefs.js prefsLegacy.js
+msgid "GPU graph"
+msgstr "Gráfica de GPU"
+
+#: prefs.js
+msgid "Show GPU load when supported."
+msgstr "Muestra la carga de GPU cuando sea compatible."
+
+#: prefs.js prefsLegacy.js
+msgid "Swap graph"
+msgstr "Gráfica de swap"
+
+#: prefs.js
+msgid "Show the swap graph."
+msgstr "Muestra la gráfica de swap."
+
+#: prefs.js prefsLegacy.js
+msgid "Network graphs"
+msgstr "Gráficas de red"
+
+#: prefs.js
+msgid "Show upload and download graphs."
+msgstr "Muestra las gráficas de subida y bajada."

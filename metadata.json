@@ -3,6 +3,7 @@
   "description": "CPU, GPU, RAM, Swap, Network speed in your panel",
   "uuid": "sysmonitor@talhasiddique7",
   "settings-schema": "org.gnome.shell.extensions.sysmon",
+  "gettext-domain": "sysmonitor@talhasiddique7",
   "shell-version": [
     "45",
     "46",

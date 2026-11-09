@@ -1,6 +1,5 @@
 // Legacy preferences for GNOME 40-42 (Gtk-based, no libadwaita)
 const Gtk = imports.gi.Gtk;
-const Gio = imports.gi.Gio;
 const ExtensionUtils = imports.misc.extensionUtils;
 const _ = ExtensionUtils.gettext;
 
@@ -16,6 +15,37 @@ class Preferences {
         return this._settings;
     }
 
+    _addSection(frame, title) {
+        const label = new Gtk.Label({
+            label: `<b>${title}</b>`,
+            use_markup: true,
+            halign: Gtk.Align.START,
+            margin_top: 12,
+        });
+        frame.pack_start(label, false, false, 0);
+    }
+
+    _addSwitch(frame, key, label) {
+        const switchLabel = new Gtk.Label({
+            label: label,
+            halign: Gtk.Align.START,
+        });
+        const switchWidget = new Gtk.Switch({
+            active: this.getSettings().get_boolean(key),
+        });
+        switchWidget.connect('notify::active', (widget) => {
+            this.getSettings().set_boolean(key, widget.active);
+        });
+
+        const switchBox = new Gtk.Box({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            spacing: 10,
+        });
+        switchBox.pack_start(switchLabel, true, true, 0);
+        switchBox.pack_start(switchWidget, false, false, 0);
+        frame.pack_start(switchBox, false, false, 0);
+    }
+
     buildPrefsWidget() {
         const frame = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
@@ -23,9 +53,11 @@ class Preferences {
             margin: 10,
         });
 
+        this._addSection(frame, _('General'));
+
         // Refresh interval
         const intervalLabel = new Gtk.Label({
-            label: 'Refresh interval (seconds)',
+            label: _('Refresh interval (seconds)'),
             halign: Gtk.Align.START,
         });
         const intervalAdjustment = new Gtk.Adjustment({
@@ -49,36 +81,30 @@ class Preferences {
         intervalBox.pack_start(intervalSpin, false, false, 0);
         frame.pack_start(intervalBox, false, false, 0);
 
-        // Toggle switches
-        const toggles = [
-            ['monochrome-mode', 'Monochrome mode'],
-            ['show-cpu', 'Show CPU'],
-            ['show-ram', 'Show RAM'],
-            ['show-gpu', 'Show GPU'],
-            ['show-swap', 'Show Swap'],
-            ['show-network', 'Show Network'],
+        this._addSwitch(frame, 'monochrome-mode', _('Monochrome mode'));
+
+        this._addSection(frame, _('Panel'));
+
+        this._addSwitch(frame, 'panel-show-values', _('Show values'));
+
+        const panelToggles = [
+            ['show-cpu', _('CPU')],
+            ['show-ram', _('RAM')],
+            ['show-swap', _('Swap')],
+            ['show-network', _('Network')],
         ];
+        panelToggles.forEach(([key, label]) => this._addSwitch(frame, key, label));
 
-        toggles.forEach(([key, label]) => {
-            const switchLabel = new Gtk.Label({
-                label: label,
-                halign: Gtk.Align.START,
-            });
-            const switchWidget = new Gtk.Switch({
-                active: this.getSettings().get_boolean(key),
-            });
-            switchWidget.connect('notify::active', (widget) => {
-                this.getSettings().set_boolean(key, widget.active);
-            });
+        this._addSection(frame, _('Popup'));
 
-            const switchBox = new Gtk.Box({
-                orientation: Gtk.Orientation.HORIZONTAL,
-                spacing: 10,
-            });
-            switchBox.pack_start(switchLabel, true, true, 0);
-            switchBox.pack_start(switchWidget, false, false, 0);
-            frame.pack_start(switchBox, false, false, 0);
-        });
+        const popupToggles = [
+            ['popup-show-cpu', _('CPU graph')],
+            ['popup-show-ram', _('RAM graph')],
+            ['popup-show-gpu', _('GPU graph')],
+            ['popup-show-swap', _('Swap graph')],
+            ['popup-show-network', _('Network graphs')],
+        ];
+        popupToggles.forEach(([key, label]) => this._addSwitch(frame, key, label));
 
         frame.show_all();
         return frame;
@@ -88,6 +114,7 @@ class Preferences {
 let prefs = null;
 
 function init() {
+    ExtensionUtils.initTranslations();
     prefs = new Preferences();
 }
 

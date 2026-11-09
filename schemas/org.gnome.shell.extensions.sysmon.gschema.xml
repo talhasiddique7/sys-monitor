@@ -10,25 +10,45 @@
       <default>false</default>
       <summary>Use monochrome indicators</summary>
     </key>
+    <key name="panel-show-values" type="b">
+      <default>true</default>
+      <summary>Show metric values in the panel</summary>
+    </key>
     <key name="show-cpu" type="b">
       <default>true</default>
-      <summary>Show CPU usage</summary>
+      <summary>Show CPU usage in the panel</summary>
     </key>
     <key name="show-ram" type="b">
       <default>true</default>
-      <summary>Show RAM usage</summary>
+      <summary>Show RAM usage in the panel</summary>
     </key>
-    <key name="show-gpu" type="b"> 
-      <default>true</default> 
-      <summary>Show GPU usage</summary>
-    </key> 
-    <key name="show-swap" type="b"> 
-      <default>true</default> 
-      <summary>Show swap usage</summary>
-    </key> 
-    <key name="show-network" type="b"> 
-      <default>true</default> 
-      <summary>Show network speeds</summary>
+    <key name="show-swap" type="b">
+      <default>true</default>
+      <summary>Show swap usage in the panel</summary>
+    </key>
+    <key name="show-network" type="b">
+      <default>true</default>
+      <summary>Show network speeds in the panel</summary>
+    </key>
+    <key name="popup-show-cpu" type="b">
+      <default>true</default>
+      <summary>Show the CPU graph in the popup</summary>
+    </key>
+    <key name="popup-show-ram" type="b">
+      <default>true</default>
+      <summary>Show the RAM graph in the popup</summary>
+    </key>
+    <key name="popup-show-gpu" type="b">
+      <default>true</default>
+      <summary>Show the GPU graph in the popup</summary>
+    </key>
+    <key name="popup-show-swap" type="b">
+      <default>true</default>
+      <summary>Show the swap graph in the popup</summary>
+    </key>
+    <key name="popup-show-network" type="b">
+      <default>true</default>
+      <summary>Show the network graphs in the popup</summary>
     </key> 
   </schema> 
 </schemalist> 
