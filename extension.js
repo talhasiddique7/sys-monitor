@@ -8,10 +8,25 @@ import GObject from 'gi://GObject';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as Config from 'resource:///org/gnome/shell/misc/config.js';
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
 Gio._promisify(Gio.Subprocess.prototype, 'communicate_utf8_async', 'communicate_utf8_finish');
+
+const SHELL_MAJOR = Number.parseInt(Config.PACKAGE_VERSION, 10);
+
+function boxLayoutDirection(vertical) {
+    if (SHELL_MAJOR >= 48) {
+        return {
+            orientation: vertical
+                ? Clutter.Orientation.VERTICAL
+                : Clutter.Orientation.HORIZONTAL,
+        };
+    }
+
+    return {vertical};
+}
 
 // Minimal printf-style interpolation for translated strings (GJS has no
 // String.prototype.format).
