@@ -1,0 +1,95 @@
+
+name: Upload Release to GNOME Extensions
+
+on:
+  workflow_run:
+    workflows:
+      - GNOME Extension CI & Release
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-26.04
+
+    steps:
+      - name: Checkout released commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Get release version
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' metadata.json)
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Release: v${VERSION}"
+
+      - name: Download ZIP files from GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p release-zips
+
+          gh release download "${{ steps.version.outputs.tag }}" \
+            --pattern '*.zip' \
+            --dir release-zips
+
+          echo "Downloaded release assets:"
+          ls -lh release-zips/
+
+      - name: Verify release ZIP files
+        run: |
+          set -euo pipefail
+
+          shopt -s nullglob
+          FILES=(release-zips/*.zip)
+
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "ERROR: No ZIP files found in GitHub Release."
+            exit 1
+          fi
+
+          for file in "${FILES[@]}"; do
+            echo "Checking $file"
+            unzip -t "$file"
+          done
+
+      - name: Upload all variants to GNOME Extensions
+        env:
+          GNOME_USERNAME: ${{ secrets.GNOME_USERNAME }}
+          GNOME_PASSWORD: ${{ secrets.GNOME_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          command -v gnome-extensions
+
+          if ! gnome-extensions upload --help 2>&1 | grep -q -- '--accept-tos'; then
+            echo "ERROR: GNOME upload CLI is unavailable."
+            exit 1
+          fi
+
+          PASSWORD_FILE="$RUNNER_TEMP/gnome-password"
+          trap 'rm -f "$PASSWORD_FILE"' EXIT
+
+          printf '%s' "$GNOME_PASSWORD" > "$PASSWORD_FILE"
+          chmod 600 "$PASSWORD_FILE"
+
+          shopt -s nullglob
+          FILES=(release-zips/*.zip)
+
+          echo "Uploading ${#FILES[@]} ZIP files..."
+
+          gnome-extensions upload \
+            --accept-tos \
+            --user="$GNOME_USERNAME" \
+            --password-file="$PASSWORD_FILE" \
+            "${FILES[@]}"
+
+          echo "GNOME upload command completed."
